@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>REDUX debugger ❤️!</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <script src="./assets/js/vendor/socketio/socket.io.min.js"></script>
+    <script src="./assets/js/vendor/jquery/jquery.js"></script>
+    <script src="assets/js/vendor/bootstrap/bootstrap.min.js"></script>
+    <script src="assets/js/vendor/json-view/jquery.json-view.min.js"></script>
+    <link href="./assets/js/vendor/json-view/jquery.json-view.min.css" type="text/css" rel="stylesheet" />
+    <link href="./assets/css/vendors/bootstrap/bootstrap.min.css" type="text/css" rel="stylesheet" />
+    <link href="./assets/css/app.css" type="text/css" rel="stylesheet" />
+    <script>
+        var jsonViews = {
+            current: true,
+            prev: false,
+            diff: false
+        }
+        var stackState = [];
+    </script>
+</head>
+
+<body>
+    <div class='container-fluid'>
+        <div class='row'>
+            <div class="col-3 padding-right-0">
+                <ul id="actions">
+                </ul>
+            </div>
+            <div style="background-color: #8f9197; flex: 1;" class="col-9 padding-left-0 padding-right-0">
+                <div id='header-viewer'>
+                    <div class="row justify-content-between">
+                        <div class="col-3">
+                            State
+                        </div>
+                        <div class="col-3">
+                            <div class="btn-group btn-group-sm" role="group"
+                                aria-label="Basic radio toggle button group">
+                                <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off"
+                                    checked>
+                                <label class="btn btn-primary" for="btnradio1">Current</label>
+
+                                <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+                                <label class="btn btn-primary" for="btnradio2">Previous</label>
+
+                                <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
+                                <label class="btn btn-primary" for="btnradio3">Diff</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+
+                </div>
+                <div class="state-viewer" id="current-state-viewer"></div>
+                <div style="display: none;" class="state-viewer" id="prev-state-viewer"></div>
+                <div style="display: none;" class="state-viewer" id="diff-state-viewer"></div> 
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        const socket = io("http://localhost:9090");
+        let index = 0;
+        socket.on('newChange', (data) => {
+            let info = JSON.parse(data);
+            stackState.push(info);
+            $("#actions").append(`<li> <a onClick="showState(${index})" href='javascript:;'>${info.action.type}</a> </li>`);
+            index += 1;
+        })
+
+
+
+
+        function showState(index) {
+            // var data  = JSON.parse(JSON.stringify());
+            $('#current-state-viewer').empty();
+            $('#prev-state-viewer').empty();
+            $('#diff-state-viewer').empty();
+
+            $('#current-state-viewer').jsonView({
+                action: stackState[index].action,
+                state: stackState[index].nextState
+            });
+            $('#prev-state-viewer').jsonView({
+                action: stackState[index].action,
+                state: stackState[index].prevState
+            });
+            $('#diff-state-viewer').html('hold down bro!');
+                
+        }
+
+
+        $("#btnradio1").click(()=>{
+            $('#current-state-viewer').show();
+            $('#prev-state-viewer').hide();
+            $('#diff-state-viewer').hide();
+        })
+
+        $("#btnradio2").click(()=>{
+            $('#current-state-viewer').hide();
+            $('#prev-state-viewer').show();
+            $('#diff-state-viewer').hide();
+        })
+
+        $("#btnradio3").click(()=>{
+            $('#current-state-viewer').hide();
+            $('#prev-state-viewer').hide();
+            $('#diff-state-viewer').show();
+        })
+    </script>
+
+</body>
+
+</html>
